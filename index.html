@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام يُسر - الاستعلام عن الطالبات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 28px;
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+        }
+
+        .search-label {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: #f8f9ff;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .student-id {
+            color: #666;
+            font-size: 14px;
+            margin-top: 3px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            display: none;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-icon {
+            font-size: 20px;
+            margin-left: 10px;
+        }
+
+        .result-label {
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .confirm-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .confirm-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 16px;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 22px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .result-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <img src="logo.jpg" alt="Logo" class="logo" onerror="this.style.display='none'">
+        <div class="header-content">
+            <div class="header-title">🔍 نظام يُسر - الاستعلام عن الطالبات</div>
+            <div class="header-subtitle">مبادرة "يُسر" - لأننا نؤمن أن التقنية خُلِقت لتسهّل الحياة</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Alert Messages -->
+        <div id="alertSuccess" class="alert alert-success"></div>
+        <div id="alertError" class="alert alert-error"></div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <label class="search-label">ابحث عن الطالبة (بالاسم أو رقم الطالبة):</label>
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="اكتب اسم الطالبة أو رقمها..."
+                    autocomplete="off"
+                >
+                <div id="autocompleteResults" class="autocomplete-results"></div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            جاري البحث...
+        </div>
+
+        <!-- Result Card -->
+        <div id="resultCard" class="result-card">
+            <div class="result-row">
+                <span class="result-icon">📌</span>
+                <span class="result-label">اسم الطالبة:</span>
+                <span id="studentName"></span>
+            </div>
+            <div class="result-row">
+                <span class="result-icon">🎓</span>
+                <span class="result-label">الصف:</span>
+                <span id="studentGrade"></span>
+            </div>
+            <div class="result-row">
+                <span class="result-icon">📚</span>
+                <span class="result-label">الفصل:</span>
+                <span id="studentClass"></span>
+            </div>
+            <div class="result-row">
+                <span class="result-icon">🆔</span>
+                <span class="result-label">رقم الطالبة:</span>
+                <span id="studentId"></span>
+                <span style="margin-right: 10px;">(السجل المدني: <span id="civilId"></span>)</span>
+            </div>
+        </div>
+
+        <!-- Confirm Button -->
+        <button id="confirmBtn" class="confirm-btn">
+            ✅ موافق - تأكيد الاستعلام
+        </button>
+    </div>
+
+    <script>
+        // ضع هنا Web App URL الخاص بك
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxxsWrpXWgZiLRHMLLxL3Wm8FhhXaz3mmXxR6HGnc_kngEED4kY-aQy4dwWw9S-00CgYQ/exec';
+        
+        let selectedStudent = null;
+        let searchTimeout = null;
+
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteResults = document.getElementById('autocompleteResults');
+        const resultCard = document.getElementById('resultCard');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const loading = document.getElementById('loading');
+        const alertSuccess = document.getElementById('alertSuccess');
+        const alertError = document.getElementById('alertError');
+
+        // Event Listeners
+        searchInput.addEventListener('input', handleSearch);
+        confirmBtn.addEventListener('click', handleConfirm);
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-box')) {
+                autocompleteResults.style.display = 'none';
+            }
+        });
+
+        // Handle Search with Debounce
+        function handleSearch(e) {
+            const searchTerm = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (searchTerm.length < 2) {
+                autocompleteResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchStudents(searchTerm);
+            }, 300);
+        }
+
+        // Search Students API Call
+        async function searchStudents(searchTerm) {
+            try {
+                showLoading(true);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'searchStudents',
+                        searchTerm: searchTerm
+                    })
+                });
+
+                const result = await response.json();
+                showLoading(false);
+
+                if (result.success && result.data.length > 0) {
+                    displayAutocompleteResults(result.data);
+                } else {
+                    autocompleteResults.innerHTML = '<div class="autocomplete-item">لا توجد نتائج</div>';
+                    autocompleteResults.style.display = 'block';
+                }
+            } catch (error) {
+                showLoading(false);
+                showAlert('خطأ في الاتصال بالخادم', 'error');
+            }
+        }
+
+        // Display Autocomplete Results
+        function displayAutocompleteResults(students) {
+            autocompleteResults.innerHTML = '';
+            
+            students.forEach(student => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.innerHTML = `
+                    <div class="student-name">${student.name}</div>
+                    <div class="student-id">رقم الطالبة: ${student.id}</div>
+                `;
+                item.addEventListener('click', () => selectStudent(student));
+                autocompleteResults.appendChild(item);
+            });
+
+            autocompleteResults.style.display = 'block';
+        }
+
+        // Select Student
+        function selectStudent(student) {
+            selectedStudent = student;
+            
+            // Update search input
+            searchInput.value = `${student.name} - ${student.id}`;
+            
+            // Hide autocomplete
+            autocompleteResults.style.display = 'none';
+            
+            // Display result card
+            document.getElementById('studentName').textContent = student.name;
+            document.getElementById('studentGrade').textContent = student.grade;
+            document.getElementById('studentClass').textContent = student.class;
+            document.getElementById('studentId').textContent = student.id;
+            document.getElementById('civilId').textContent = student.civilId;
+            
+            resultCard.style.display = 'block';
+            confirmBtn.style.display = 'block';
+            
+            hideAlert();
+        }
+
+        // Handle Confirm
+        async function handleConfirm() {
+            if (!selectedStudent) return;
+
+            try {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'جاري التسجيل...';
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'recordInquiry',
+                        studentId: selectedStudent.id
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('✅ تم تسجيل الاستعلام بنجاح', 'success');
+                    resetForm();
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('خطأ في الاتصال بالخادم', 'error');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '✅ موافق - تأكيد الاستعلام';
+            }
+        }
+
+        // Reset Form
+        function resetForm() {
+            selectedStudent = null;
+            searchInput.value = '';
+            resultCard.style.display = 'none';
+            confirmBtn.style.display = 'none';
+            autocompleteResults.style.display = 'none';
+        }
+
+        // Show/Hide Alert
+        function showAlert(message, type) {
+            const alert = type === 'success' ? alertSuccess : alertError;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function hideAlert() {
+            alertSuccess.style.display = 'none';
+            alertError.style.display = 'none';
+        }
+
+        // Show/Hide Loading
+        function showLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
